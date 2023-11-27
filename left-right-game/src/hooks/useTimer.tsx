@@ -3,7 +3,7 @@ import { useRef, useState } from "react";
 const GAME_TIME = 10000;
 
 export default function useTimer() {
-  const [isGameStart, setIsGameStart] = useState(false);
+  const [isTimerStart, setIsTimerStart] = useState(false);
   const [timeText, setTimeText] = useState("");
   //   const [time, setTime] = useState(GAME_TIME);
 
@@ -25,7 +25,7 @@ export default function useTimer() {
     timerRef.current = setInterval(() => {
       currentTime.current = time - (Date.now() - startTime);
       if (currentTime.current <= 0) {
-        endGame();
+        endTimer();
         updateTimerText(0);
         return;
       }
@@ -34,17 +34,17 @@ export default function useTimer() {
     }, 1);
   };
 
-  const initGame = () => {
+  const initTimer = () => {
     updateTimerText(GAME_TIME);
   };
 
-  const startGame = () => {
-    setIsGameStart(true);
+  const startTimer = () => {
+    setIsTimerStart(true);
     handleTimer(GAME_TIME);
   };
 
-  const endGame = () => {
-    setIsGameStart(false);
+  const endTimer = () => {
+    setIsTimerStart(false);
     clearInterval(timerRef.current!);
   };
 
@@ -56,17 +56,17 @@ export default function useTimer() {
 
   const minusTime = () => {
     clearInterval(timerRef.current!);
-    setCurrentTime(currentTime.current - 500);
+    setCurrentTime(currentTime.current - 800);
     handleTimer(currentTime.current);
   };
   return {
-    isGameStart,
+    isTimerStart,
     timeText,
-    startGame,
-    endGame,
+    startTimer,
+    endTimer,
     addTime,
     minusTime,
-    initGame,
+    initTimer,
   };
 }
 

@@ -45,13 +45,13 @@ function App() {
   const [maxCombo, setMaxCombo] = useState(0);
 
   const {
-    isGameStart,
+    isTimerStart,
     timeText,
-    startGame,
-    endGame,
+    startTimer,
+    endTimer,
     addTime,
     minusTime,
-    initGame,
+    initTimer,
   } = useTimer();
 
   const inputHandler = (e: KeyboardEvent) => {
@@ -62,8 +62,8 @@ function App() {
       return;
     }
 
-    if (!isGameStart) {
-      startGame();
+    if (!isTimerStart) {
+      startTimer();
     }
 
     setCurrentUserInput(key);
@@ -89,7 +89,7 @@ function App() {
         return currentCombo;
       });
 
-      if (isGameStart) {
+      if (isTimerStart) {
         addTime();
       }
     } else {
@@ -100,7 +100,7 @@ function App() {
 
   useEffect(() => {
     document.addEventListener("keydown", inputHandler);
-    initGame();
+    initTimer();
     return () => {
       document.removeEventListener("keydown", inputHandler);
     };
