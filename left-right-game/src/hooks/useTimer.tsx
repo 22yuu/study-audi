@@ -36,6 +36,7 @@ export default function useTimer() {
 
   const initTimer = () => {
     updateTimerText(GAME_TIME);
+    endTimer();
   };
 
   const startTimer = () => {

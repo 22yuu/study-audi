@@ -4,9 +4,14 @@ import ArrowBeat from "./game/arrow-beat";
 import styled from "styled-components";
 import useTimer from "./hooks/useTimer";
 import LogoIcon from "./assets/icons/LogoIcon";
+import Modal from "./components/Modal";
 
 const game = new Game();
-const allArrowBeats = game.generateBeats();
+let allArrowBeats = game.generateBeats();
+
+type TextMaxScoreProps = {
+  right?: boolean;
+};
 
 // components
 const MainWrapper = styled.div`
@@ -28,9 +33,30 @@ const ArrowBeatIcon = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 36px;
   font-weight: bold;
   margin: 10px;
+  font-size: 36px;
+`;
+
+const TextScoreWrapper = styled.div<TextMaxScoreProps>`
+  position: absolute;
+  ${(props) => (props.right ? `right: 0;` : `left: 0;`)}
+  bottom: 300px;
+  text-transform: uppercase;
+  text-align: center;
+`;
+
+const TextMaxScore = styled.div`
+  font-size: 14px;
+`;
+
+const TextScore = styled.div`
+  font-size: 24px;
+`;
+
+const Information = styled.div`
+  margin-top: 48px;
+  text-align: center;
 `;
 
 function App() {
@@ -43,12 +69,13 @@ function App() {
   const [combo, setCombo] = useState(0);
   const [maxScore, setMaxScore] = useState(0);
   const [maxCombo, setMaxCombo] = useState(0);
+  const [isGameStart, setIsGameStart] = useState(false);
 
   const {
     isTimerStart,
     timeText,
-    startTimer,
     endTimer,
+    startTimer,
     addTime,
     minusTime,
     initTimer,
@@ -62,8 +89,9 @@ function App() {
       return;
     }
 
-    if (!isTimerStart) {
+    if (!isTimerStart && !isGameStart) {
       startTimer();
+      setIsGameStart(true);
     }
 
     setCurrentUserInput(key);
@@ -98,13 +126,30 @@ function App() {
     }
   };
 
+  const initGame = () => {
+    allArrowBeats = game.generateBeats();
+
+    initTimer();
+    setScore(0);
+    setCombo(0);
+  };
+
+  const endGame = () => {
+    setIsGameStart(false);
+    initGame();
+  };
+
+  useEffect(() => {
+    initGame();
+  }, []);
+
   useEffect(() => {
     document.addEventListener("keydown", inputHandler);
-    initTimer();
+
     return () => {
       document.removeEventListener("keydown", inputHandler);
     };
-  }, [currentBeats]);
+  }, [currentBeats, isGameStart]);
 
   return (
     <MainWrapper>
@@ -117,20 +162,35 @@ function App() {
         );
       })}
 
-      <div>current input : {currentUserInput === "ArrowLeft" ? "←" : "→"}</div>
-      <div style={{ position: "absolute", left: "0px", bottom: "20px" }}>
-        score : {score}
-      </div>
-      <div style={{ position: "absolute", right: "0px", bottom: "20px" }}>
-        combo : {combo}
-      </div>
-      <div style={{ position: "absolute", left: "0px", bottom: "50px" }}>
-        max score : {maxScore}
-      </div>
-      <div style={{ position: "absolute", right: "0px", bottom: "50px" }}>
-        max combo : {maxCombo}
-      </div>
-      <span>{timeText}</span>
+      <TextScoreWrapper>
+        <TextMaxScore>
+          <p>MAX-SCORE</p>
+          <p>{maxScore}</p>
+        </TextMaxScore>
+        <TextScore>
+          <p>score</p>
+          <p>{score}</p>
+        </TextScore>
+      </TextScoreWrapper>
+      <TextScoreWrapper right={true}>
+        <TextMaxScore>
+          <p>MAX-COMBO</p>
+          <p>{maxCombo}</p>
+        </TextMaxScore>
+        <TextScore>
+          <p>combo</p>
+          <p>{combo}</p>
+        </TextScore>
+      </TextScoreWrapper>
+      <Information>
+        <div>
+          current input : {currentUserInput === "ArrowLeft" ? "←" : "→"}
+        </div>
+        <p>{timeText}</p>
+      </Information>
+      {isGameStart && !isTimerStart && (
+        <Modal score={score} onClose={endGame} />
+      )}
     </MainWrapper>
   );
 }
