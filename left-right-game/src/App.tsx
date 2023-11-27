@@ -1,9 +1,37 @@
 import { useEffect, useState } from "react";
 import Game from "./game/game";
 import ArrowBeat from "./game/arrow-beat";
+import styled from "styled-components";
+import useTimer from "./hooks/useTimer";
+import LogoIcon from "./assets/icons/LogoIcon";
 
 const game = new Game();
 const allArrowBeats = game.generateBeats();
+
+// components
+const MainWrapper = styled.div`
+  display: flex;
+  position: relative;
+  flex-direction: column;
+  max-width: 500px;
+  width: 100%;
+  height: 100%;
+  margin: 0 auto;
+  justify-content: center;
+  align-items: center;
+`;
+
+const ArrowBeatIcon = styled.div`
+  width: 70px;
+  height: 70px;
+  border: 5px solid #222;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 36px;
+  font-weight: bold;
+  margin: 10px;
+`;
 
 function App() {
   const [currentUserInput, setCurrentUserInput] = useState("");
@@ -16,6 +44,16 @@ function App() {
   const [maxScore, setMaxScore] = useState(0);
   const [maxCombo, setMaxCombo] = useState(0);
 
+  const {
+    isGameStart,
+    timeText,
+    startGame,
+    endGame,
+    addTime,
+    minusTime,
+    initGame,
+  } = useTimer();
+
   const inputHandler = (e: KeyboardEvent) => {
     const key = e.key;
 
@@ -23,6 +61,11 @@ function App() {
       setCurrentUserInput("");
       return;
     }
+
+    if (!isGameStart) {
+      startGame();
+    }
+
     setCurrentUserInput(key);
     correctTarget(key);
   };
@@ -38,44 +81,57 @@ function App() {
         setMaxCombo((prev) => Math.max(prev, currentCombo));
         setScore((prev) => {
           const currentScore = prev + (10 * combo + Math.abs(10 - combo));
-          console.log(`combo ${combo} : ${10 * combo + Math.abs(10 - combo)}`);
+          // console.log(`combo ${combo} : ${10 * combo + Math.abs(10 - combo)}`);
           setMaxScore((prev) => Math.max(prev, currentScore));
+
           return currentScore;
         });
-
         return currentCombo;
       });
+
+      if (isGameStart) {
+        addTime();
+      }
     } else {
       setCombo(0);
+      minusTime();
     }
   };
 
   useEffect(() => {
     document.addEventListener("keydown", inputHandler);
-
+    initGame();
     return () => {
       document.removeEventListener("keydown", inputHandler);
     };
   }, [currentBeats]);
 
   return (
-    <div className="flex flex-col ">
-      hello!
+    <MainWrapper>
+      <LogoIcon />
       {currentBeats.map((arrow) => {
         return (
-          <div data-id={arrow.id} key={arrow.id}>
+          <ArrowBeatIcon data-id={arrow.id} key={arrow.id}>
             {arrow.arrow === "ArrowLeft" ? "←" : "→"}
-          </div>
+          </ArrowBeatIcon>
         );
       })}
-      <div>
-        <p>current input : {currentUserInput === "ArrowLeft" ? "←" : "→"}</p>
-        <p>score : {score}</p>
-        <p>combo : {combo}</p>
-        <p>max score : {maxScore}</p>
-        <p>max combo : {maxCombo}</p>
+
+      <div>current input : {currentUserInput === "ArrowLeft" ? "←" : "→"}</div>
+      <div style={{ position: "absolute", left: "0px", bottom: "20px" }}>
+        score : {score}
       </div>
-    </div>
+      <div style={{ position: "absolute", right: "0px", bottom: "20px" }}>
+        combo : {combo}
+      </div>
+      <div style={{ position: "absolute", left: "0px", bottom: "50px" }}>
+        max score : {maxScore}
+      </div>
+      <div style={{ position: "absolute", right: "0px", bottom: "50px" }}>
+        max combo : {maxCombo}
+      </div>
+      <span>{timeText}</span>
+    </MainWrapper>
   );
 }
 
