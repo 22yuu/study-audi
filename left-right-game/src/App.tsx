@@ -5,6 +5,10 @@ import styled from "styled-components";
 import useTimer from "./hooks/useTimer";
 import LogoIcon from "./assets/icons/LogoIcon";
 import Modal from "./components/Modal";
+import {
+  getDataFromLocalStorage,
+  saveToLocalStorage,
+} from "./utils/localStorage";
 
 const game = new Game();
 let allArrowBeats = game.generateBeats();
@@ -67,19 +71,16 @@ function App() {
   );
   const [score, setScore] = useState(0);
   const [combo, setCombo] = useState(0);
-  const [maxScore, setMaxScore] = useState(0);
-  const [maxCombo, setMaxCombo] = useState(0);
+  const [maxScore, setMaxScore] = useState(
+    Number(getDataFromLocalStorage("MaxScore")) || 0
+  );
+  const [maxCombo, setMaxCombo] = useState(
+    Number(getDataFromLocalStorage("MaxCombo")) || 0
+  );
   const [isGameStart, setIsGameStart] = useState(false);
 
-  const {
-    isTimerStart,
-    timeText,
-    endTimer,
-    startTimer,
-    addTime,
-    minusTime,
-    initTimer,
-  } = useTimer();
+  const { isTimerStart, timeText, startTimer, addTime, minusTime, initTimer } =
+    useTimer();
 
   const inputHandler = (e: KeyboardEvent) => {
     const key = e.key;
@@ -106,11 +107,24 @@ function App() {
 
       setCombo((combo) => {
         const currentCombo = combo + 1;
-        setMaxCombo((prev) => Math.max(prev, currentCombo));
+        setMaxCombo((prev) => {
+          if (prev < currentCombo) {
+            saveToLocalStorage({ key: "MaxCombo", value: `${currentCombo}` });
+            return Math.max(prev, currentCombo);
+          }
+          return prev;
+        });
         setScore((prev) => {
           const currentScore = prev + (10 * combo + Math.abs(10 - combo));
           // console.log(`combo ${combo} : ${10 * combo + Math.abs(10 - combo)}`);
-          setMaxScore((prev) => Math.max(prev, currentScore));
+          setMaxScore((prev) => {
+            if (prev < currentScore) {
+              saveToLocalStorage({ key: "MaxScore", value: `${currentScore}` });
+              return Math.max(prev, currentScore);
+            }
+
+            return prev;
+          });
 
           return currentScore;
         });
